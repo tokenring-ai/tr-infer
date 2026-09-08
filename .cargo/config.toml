@@ -1,0 +1,2 @@
+[build]
+rustflags = ["-C", "target-cpu=sapphirerapids", "-C", "target-feature=+amx-tile,+amx-int8,+amx-bf16"]

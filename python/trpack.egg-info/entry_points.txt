@@ -1,0 +1,2 @@
+[console_scripts]
+trpack = trpack.cli:main

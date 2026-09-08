@@ -1,0 +1,10 @@
+1.08.777.502 I cmn          init: llama threadpool init, n_threads = 104
+1.08.777.570 I 
+1.08.779.449 I system_info: n_threads = 104 (n_threads_batch = 104) / 208 | CUDA : ARCHS = 890,1200 | USE_GRAPHS = 1 | BLACKWELL_NATIVE_FP4 = 1 | CPU : SSE3 = 1 | SSSE3 = 1 | AVX = 1 | AVX_VNNI = 1 | AVX2 = 1 | F16C = 1 | FMA = 1 | BMI2 = 1 | AVX512 = 1 | AVX512_VBMI = 1 | AVX512_VNNI = 1 | AVX512_BF16 = 1 | AMX_INT8 = 1 | LLAMAFILE = 1 | OPENMP = 1 | REPACK = 1 | 
+1.08.779.459 I 
+1.08.779.586 I number of input tokens = 5
+1.08.779.588 I   760
+1.08.779.588 I   6511
+1.08.779.589 I   314
+1.08.779.589 I   9338
+1.08.779.589 I   369

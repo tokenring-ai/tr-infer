@@ -1,0 +1,25 @@
+[package]
+name = "tr-infer"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[[bin]]
+name = "tr-infer"
+path = "src/main.rs"
+
+[dependencies]
+libc.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+config.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tr-format = { path = "../tr-format" }
+tr-sys = { path = "../tr-sys" }
+tr-kernels = { path = "../tr-kernels" }
+tr-model = { path = "../tr-model" }
+tr-cache = { path = "../tr-cache" }
+image = "0.25"
+base64 = "0.22"
+ureq = "3"

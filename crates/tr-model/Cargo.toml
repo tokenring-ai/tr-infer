@@ -1,0 +1,16 @@
+[package]
+name = "tr-model"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+anyhow.workspace = true
+memmap2.workspace = true
+half.workspace = true
+rand.workspace = true
+tr-format = { path = "../tr-format" }
+tr-sys = { path = "../tr-sys" }
+tr-kernels = { path = "../tr-kernels" }
+tokenizers = { version = "0.21", default-features = false, features = ["onig"] }
+serde_json.workspace = true

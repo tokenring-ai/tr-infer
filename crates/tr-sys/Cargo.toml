@@ -1,0 +1,10 @@
+[package]
+name = "tr-sys"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+half.workspace = true
+libc.workspace = true
+anyhow.workspace = true

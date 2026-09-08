@@ -1,0 +1,19 @@
+[project]
+name = "trpack"
+version = "0.1.0"
+description = "Offline GGUF -> tr-infer pack v2 converter (numpy only)"
+requires-python = ">=3.12"
+dependencies = ["numpy>=2.0", "gguf>=0.17"]
+
+[project.optional-dependencies]
+dev = ["pytest>=8"]
+
+[project.scripts]
+trpack = "trpack.cli:main"
+
+[build-system]
+requires = ["setuptools>=61"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["trpack*"]

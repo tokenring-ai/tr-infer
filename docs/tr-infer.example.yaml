@@ -1,0 +1,153 @@
+# tr-infer configuration. Copy to /etc/tr-infer/config.yaml, $XDG_CONFIG_HOME/tr-infer/config.yaml
+# or ./tr-infer.yaml, or point at it with --config FILE or $TR_CONFIG.
+#
+# Everything here is optional; what a file leaves out keeps its default. The environment
+# (TR_RUNTIME__CTX=60000) overrides the file, and flags override both.
+# `tr-infer config --keys` lists every key, `tr-infer config --for serve` shows what a command
+# will actually use. See docs/CONFIG.md.
+
+# Pack directory produced by trpack; required by every command that loads a model.
+pack: /opt/llm/tr-infer/flashnext-v3
+
+runtime:
+  # Context window (prompt + completion). The KV cache is reserved for it, so this is the setting
+  # that decides how much HBM is left. Default 4096, or 8192 for `serve`.
+  ctx: 60000
+  # Prompt tokens per batched step; 1 disables the batch path.
+  batch: 256
+  # K/V cache element type: f16 (as llama.cpp), bf16, f32.
+  kv: f16
+  # Cores per NUMA tile. Unset = every physical core of the tile.
+  # cores_per_node: 14
+  # Keep the PLE n-gram table file-backed (page cache) instead of resident in HBM: -3.4 GiB/tile,
+  # at a few page faults per token until the hot rows are cached. Needed for large ctx.
+  ple_mmap: true
+  # glibc heap policy: t = no trim, m = no mmap, 0 = off. TR_PIN_HEAP is applied before anything
+  # else allocates and is the reliable way to change this.
+  # pin_heap: mt
+
+overlays:
+  # MTP draft head (`trpack mtp`): speculative decoding. ~205 MB per tile.
+  mtp: /opt/llm/tr-infer/flashnext-v3-mtp
+  # Vision encoder (`trpack vision`): image parts in chat messages.
+  # vision: /opt/llm/tr-infer/flashnext-v3-vision
+
+spec:
+  # Draft tokens per round with an MTP overlay (1..7). The verify batch is k+1 rows.
+  k: 2
+
+moe:
+  # Cumulative-mass expert routing: per token and MoE layer, take experts in router order until
+  # their mass reaches this target. Unset = the model's fixed top-10.
+  mass: 0.8
+  # Fewest / most experts per token (max <= 32).
+  # min: 1
+  # max: 10
+  # What the mass is measured against: `top` = the renormalised weights of the `max` best experts,
+  # `all` = the softmax over all 512 (this model's top-10 hold only ~15 % of it, so `all` with a
+  # target near 1 never stops early — see docs/SERVER.md "Expert routing").
+  basis: top
+  # Report the mean cumulative router mass of the best k experts (k = 1..32).
+  # profile: false
+
+sampling:
+  # Model-card values. Default temp is 0.0 for `generate` and 0.6 for `serve`.
+  temp: 0.6
+  top_p: 0.95
+  top_k: 20
+  # `generate` only; the server seeds each request from the clock unless the request sets `seed`.
+  # seed: 42
+  # `serve` only: sampling inside the <think> block when the request does not set reasoning_*.
+  # Unset = the same as the answer. E.g. explore while thinking, answer with `temp`.
+  # think_temp: 1.0
+  # think_top_p: 0.95
+  # think_top_k: 20
+
+image:
+  # An image is resized into between these many tokens of 32x32 pixels. The encoder workspace is
+  # sized for the maximum (~250 MiB per tile at 4096).
+  min_tokens: 8
+  max_tokens: 4096
+
+server:
+  host: 0.0.0.0
+  port: 8089
+  # Bearer token clients must send. TR_API_KEY sets it too and keeps it out of the file.
+  # api_key: SECRET
+  # Serve without a key (private interfaces only).
+  no_auth: false
+  # Id reported by /v1/models. Unset = the pack directory name.
+  # model_name: qwen3.8-flash-next
+  # Default reasoning effort when the request does not set one: xhigh, medium, low, none.
+  reasoning: xhigh
+
+# Persistent prefix cache of the server (docs/SERVER.md, "Prefix cache"): the state of finished
+# requests is stored on disk in role-tagged chunks and a later request with the same prefix is
+# restored instead of prefilled. Off unless `dir` is set. The directory must be on a real disk
+# (this box: the NVMe root, never /tmp); one directory per pack.
+cache:
+  dir: /opt/llm/tr-infer/kvcache
+  # Backend; only `fs` exists (network backends implement the same trait).
+  backend: fs
+  # Longest rows chunk in tokens. Chunks also end at every role boundary (system, user,
+  # reasoning, tool, assistant), so a chunk carries one role.
+  chunk_len: 256
+  # LRU byte budget. A snapshot is ~115 MiB, rows ~26 KiB per token.
+  max_gib: 32
+  # Recurrent-state snapshots, the only positions a prefix can resume from: `message` = at the end
+  # of every prompt span of at least snapshot_min_tokens plus the end of each request; `request` =
+  # request ends only (fewer writes, no resume at an edited turn).
+  snapshots: message
+  snapshot_min_tokens: 16
+  # Host memory for objects waiting for the writer thread.
+  staging_mib: 1024
+  # Per-role policies (system, user, reasoning, tool, assistant). Each has `persist` (store the
+  # role's chunks at all; nothing after an unstored chunk is restorable), `priority` (eviction
+  # order 0..=9, lower goes first, LRU within a priority), `ttl` (idle seconds before the object is
+  # dropped regardless of the budget; 0 = none) and `snapshot` (end prompt spans of the role with
+  # a snapshot). Unset = persisted, priority 5, no ttl, snapshots on.
+  roles:
+    system: { priority: 9 }
+    # reasoning: { persist: false }
+    # tool: { priority: 1, ttl: 3600 }
+
+generate:
+  prompt: "The capital of France is"
+  # prompt_file: /path/to/prompt.txt
+  n_predict: 32
+  # Wrap the prompt in the model's ChatML template (and stream the output).
+  chat: false
+  # With chat: emit an empty <think> block instead of thinking.
+  no_think: false
+  # Per-layer activation statistics for the prompt tokens (oracle comparison); forces the
+  # token-at-a-time path and disables MTP.
+  dump: false
+  # Images placed before the prompt text in the user turn; needs `chat` and `overlays.vision`.
+  # images:
+  #   - /path/to/image.jpeg
+
+bench:
+  pp: 64
+  tg: 64
+  reps: 2
+  # Decode M identical rows per step through the batched path (speculative-verify cost probe).
+  # tg_batch: 4
+
+# The remaining sections belong to the diagnostics.
+spec_probe:
+  n_predict: 64
+  chat: false
+tokenize:
+  prompt: ""
+vision_embed:
+  # image: /path/to/image.jpeg
+  # out: /tmp/embd.bin
+  reps: 1
+numa_smoke:
+  mib: 1024
+load_bench:
+  # dir: /var/tmp/loadbench    # never /tmp: tmpfs has no O_DIRECT
+  gib_per_node: 2.0
+  keep: false
+barrier_bench:
+  rounds: 100000

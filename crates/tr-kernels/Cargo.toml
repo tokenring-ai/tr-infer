@@ -1,0 +1,12 @@
+[package]
+name = "tr-kernels"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+
+[dependencies]
+half.workspace = true
+tr-format = { path = "../tr-format" }
+
+[dev-dependencies]
+rand.workspace = true

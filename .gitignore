@@ -1,0 +1,10 @@
+/target
+/python/.venv
+__pycache__/
+*.pyc
+/tools/oracle/*.txt
+/*.txt
+/*.err
+
+# local configuration picked up from the search path
+/tr-infer.yaml

@@ -1,0 +1,29 @@
+[workspace]
+resolver = "2"
+members = ["crates/tr-format", "crates/tr-sys", "crates/tr-kernels", "crates/tr-cache", "crates/tr-model", "crates/tr-infer"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+
+[workspace.dependencies]
+libc = "0.2"
+memmap2 = "0.9"
+serde = { version = "1", features = ["derive"] }
+serde_json = { version = "1", features = ["preserve_order"] }
+clap = { version = "4", features = ["derive", "env"] }
+half = "2"
+anyhow = "1"
+rand = "0.9"
+config = { version = "0.15", default-features = false, features = ["yaml", "json"] }
+
+[profile.release]
+opt-level = 3
+lto = "fat"
+codegen-units = 1
+panic = "abort"
+debug = 1
+
+[profile.bench]
+inherits = "release"

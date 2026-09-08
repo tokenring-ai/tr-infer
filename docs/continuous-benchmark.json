@@ -1,0 +1,59 @@
+{
+  "pack": "/opt/llm/tr-infer/flashnext-v3",
+  "note": "complete trace warmed once; teacher-forced distinct tokens; includes full logit transfer, excludes sampling/network/prefill",
+  "results": [
+    {
+      "mode": "serial",
+      "sequences": 1,
+      "tokens_per_second": 72.73330672647954,
+      "iteration_p50_ms": 13.743493,
+      "iteration_p95_ms": 13.974966
+    },
+    {
+      "mode": "continuous",
+      "sequences": 1,
+      "tokens_per_second": 72.66042667601259,
+      "iteration_p50_ms": 13.774343,
+      "iteration_p95_ms": 13.926573
+    },
+    {
+      "mode": "continuous",
+      "sequences": 2,
+      "tokens_per_second": 112.66975582412383,
+      "iteration_p50_ms": 17.634767999999998,
+      "iteration_p95_ms": 19.141174
+    },
+    {
+      "mode": "continuous",
+      "sequences": 4,
+      "tokens_per_second": 168.81384008591652,
+      "iteration_p50_ms": 23.749083000000002,
+      "iteration_p95_ms": 24.179461
+    },
+    {
+      "mode": "continuous",
+      "sequences": 8,
+      "tokens_per_second": 257.9432619940191,
+      "iteration_p50_ms": 30.924629,
+      "iteration_p95_ms": 32.20154
+    },
+    {
+      "mode": "continuous",
+      "sequences": 16,
+      "tokens_per_second": 279.13341716388294,
+      "iteration_p50_ms": 56.761955,
+      "iteration_p95_ms": 58.440447
+    }
+  ],
+  "configuration": {
+    "hardware": "2 x Xeon Max 9470, 8 NUMA tiles, 13 physical workers per tile",
+    "context_limit": 1024,
+    "prompt_tokens": 32,
+    "measured_decode_iterations": 24,
+    "batch_max": 256,
+    "kv": "f16",
+    "kv_pool_mib_per_tile": 256,
+    "max_sequences": 16,
+    "ple_mmap": true
+  }
+}
